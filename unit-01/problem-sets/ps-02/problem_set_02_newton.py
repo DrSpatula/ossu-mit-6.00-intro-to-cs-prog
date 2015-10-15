@@ -3,21 +3,26 @@
 # Successive Approximation
 #
 
+
 def evaluate_poly(poly, x):
     """
     Computes the polynomial function for a given value x. Returns that value.
 
     Example:
-    >>> poly = (0.0, 0.0, 5.0, 9.3, 7.0)    # f(x) = 7x^4 + 9.3x^3 + 5x^2
+    >>> poly = (0.0, 0.0, 5.0, 9.3, 7.0)    #f(x) = 7x^4 + 9.3x^3 + 5x^2
     >>> x = -13
-    >>> print evaluate_poly(poly, x)  # f(-13) = 7(-13)^4 + 9.3(-13)^3 + 5(-13)^2
+    >>> print evaluate_poly(poly, x)  #f(-13) = 7(-13)^4 + 9.3(-13)^3 + 5(-13)^2
     180339.9
 
     poly: tuple of numbers, length > 0
     x: number
     returns: float
     """
-    # TO DO ... 
+    sum = 0
+    for i in range(len(poly)):
+        sum += poly[i] * x**i
+
+    return sum
 
 
 def compute_deriv(poly):
@@ -33,7 +38,15 @@ def compute_deriv(poly):
     poly: tuple of numbers, length > 0
     returns: tuple of numbers
     """
-    # TO DO ... 
+    if len(poly) == 1:
+        return (0.0,)
+
+    derivative = ()
+    for i in range(1, len(poly)):
+        derivative += (poly[i] * i,)
+
+    return derivative
+
 
 def compute_root(poly, x_0, epsilon):
     """
@@ -55,5 +68,12 @@ def compute_root(poly, x_0, epsilon):
     epsilon: float > 0
     returns: tuple (float, int)
     """
-    # TO DO ... 
+    guess = x_0
+    iterations = 1
+    while abs(0.0 - evaluate_poly(poly, guess)) > epsilon:
+        f_of_x = evaluate_poly(poly, guess)
+        f_prime_of_x = evaluate_poly(compute_deriv(poly), guess)
+        guess = guess - (f_of_x / f_prime_of_x)
+        iterations += 1
 
+    return (guess, iterations)
