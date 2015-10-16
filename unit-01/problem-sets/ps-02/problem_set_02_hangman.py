@@ -53,7 +53,12 @@ def update_available_letters(guess, remaining_letters):
     Returns the string of unguessed letters with the latest guess removed
     """
     idx = remaining_letters.find(guess)
-    return remaining_letters[:idx] + remaining_letters[(idx + 1):]
+
+    if idx != -1:
+        remaining_letters = remaining_letters[:idx] + '_' +\
+            remaining_letters[(idx + 1):]
+
+    return remaining_letters
 
 
 def find_all(guess, word):
@@ -131,6 +136,7 @@ while guesses_left > 0 and '_' in word_progress:
         print 'Nope. {0}'.format(word_progress)
 
     letters_available = update_available_letters(guess, letters_available)
+    guess = ''
 
 if '_' not in word_progress:
     print 'Congratulations!  You have won!'
