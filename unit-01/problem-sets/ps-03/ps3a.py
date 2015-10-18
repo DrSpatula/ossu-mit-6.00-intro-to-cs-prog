@@ -22,10 +22,11 @@ SCRABBLE_LETTER_VALUES = {
 
 WORDLIST_FILENAME = "words.txt"
 
+
 def load_words():
     """
     Returns a list of valid words. Words are strings of lowercase letters.
-    
+
     Depending on the size of the word list, this function may
     take a while to finish.
     """
@@ -39,6 +40,7 @@ def load_words():
     print "  ", len(wordlist), "words loaded."
     return wordlist
 
+
 def get_frequency_dict(sequence):
     """
     Returns a dictionary where the keys are elements of the sequence
@@ -51,9 +53,9 @@ def get_frequency_dict(sequence):
     # freqs: dictionary (element_type -> int)
     freq = {}
     for x in sequence:
-        freq[x] = freq.get(x,0) + 1
+        freq[x] = freq.get(x, 0) + 1
     return freq
-	
+
 
 # (end of helper code)
 # -----------------------------------
@@ -66,18 +68,29 @@ def get_word_score(word, n):
     Returns the score for a word. Assumes the word is a
     valid word.
 
-	The score for a word is the sum of the points for letters
-	in the word multiplied by the length of the word, plus 50
-	points if all n letters are used on the first go.
+    The score for a word is the sum of the points for letters
+    in the word multiplied by the length of the word, plus 50
+    points if all n letters are used on the first go.
 
-	Letters are scored as in Scrabble; A is worth 1, B is
-	worth 3, C is worth 3, D is worth 2, E is worth 1, and so on.
+    Letters are scored as in Scrabble; A is worth 1, B is
+    worth 3, C is worth 3, D is worth 2, E is worth 1, and so on.
 
     word: string (lowercase letters)
     returns: int >= 0
     """
-    # TO DO...
-    
+    score = 0
+
+    for char in word:
+        score += SCRABBLE_LETTER_VALUES[char]
+
+    score *= len(word)
+
+    if len(word) == n:
+        score += 50
+
+    return score
+
+
 #
 # Make sure you understand how this function works and what it does!
 #
@@ -115,15 +128,15 @@ def deal_hand(n):
     """
     hand={}
     num_vowels = n / 3
-    
+
     for i in range(num_vowels):
         x = VOWELS[random.randrange(0,len(VOWELS))]
         hand[x] = hand.get(x, 0) + 1
-        
-    for i in range(num_vowels, n):    
+
+    for i in range(num_vowels, n):
         x = CONSONANTS[random.randrange(0,len(CONSONANTS))]
         hand[x] = hand.get(x, 0) + 1
-        
+
     return hand
 
 #
@@ -134,7 +147,7 @@ def update_hand(hand, word):
     Assumes that 'hand' has all the letters in word.
 	In other words, this assumes that however many times
 	a letter appears in 'word', 'hand' has at least as
-	many of that letter in it. 
+	many of that letter in it.
 
     Updates the hand: uses up the letters in the given word
     and returns the new hand, without those letters in it.
@@ -142,10 +155,24 @@ def update_hand(hand, word):
     Has no side effects: does not modify hand.
 
     word: string
-    hand: dictionary (string -> int)    
+    hand: dictionary (string -> int)
     returns: dictionary (string -> int)
     """
-    # TO DO ...
+    hand_remaining = {}
+    for key in hand.keys():
+        hand_remaining[key] = hand[key]
+
+    for char in word:
+        freq = 0
+        freq = hand_remaining[char] - 1
+
+        if freq == 0:
+            del hand_remaining[char]
+        else:
+            hand_remaining[char] = freq
+
+    return hand_remaining
+
 
 #
 # Problem #3: Test word validity
@@ -155,7 +182,7 @@ def is_valid_word(word, hand, word_list):
     Returns True if word is in the word_list and is entirely
     composed of letters in the hand. Otherwise, returns False.
     Does not mutate hand or word_list.
-    
+
     word: string
     hand: dictionary (string -> int)
     word_list: list of lowercase strings
@@ -177,7 +204,7 @@ def play_hand(hand, word_list):
     Allows the user to play the given hand, as follows:
 
     * The hand is displayed.
-    
+
     * The user may input a word.
 
     * An invalid word is rejected, and a message is displayed asking
@@ -197,14 +224,14 @@ def play_hand(hand, word_list):
 
       hand: dictionary (string -> int)
       word_list: list of lowercase strings
-      
+
     """
     # TO DO ...
 
 #
 # Problem #5: Playing a game
 # Make sure you understand how this code works!
-# 
+#
 def play_game(word_list):
     """
     Allow the user to play an arbitrary number of hands.
