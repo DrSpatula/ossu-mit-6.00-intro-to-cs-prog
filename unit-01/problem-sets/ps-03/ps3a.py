@@ -113,6 +113,13 @@ def display_hand(hand):
 
 
 def get_displayable_hand(hand):
+    """
+    Returns string of letters in hand.
+    String will be similar to output of 'display_hand' function
+
+    hand: dictionary (string -> int)
+    """
+
     output = ''
     for letter in hand.keys():
         for j in range(hand[letter]):
@@ -215,6 +222,27 @@ def calculate_handlen(hand):
         handlen += v
     return handlen
 
+
+def get_word(hand, word_list):
+    """
+    Repeatedly (recursively) prompts player for a word to play
+    until a valid word or a "." is returned.
+
+    hand: dictionary (string -> int)
+    word_list: list of lowercase strings
+    """
+    word = raw_input(
+        'Enter a word, or a "." to indicate you are finished: ')
+
+    word = word.lower()
+
+    if word == "." or is_valid_word(word, hand, word_list):
+        return word
+    else:
+        print "Invalid word. Please try again."
+        return get_word(hand, word_list)
+
+
 #
 # Problem #4: Playing a hand
 #
@@ -246,7 +274,23 @@ def play_hand(hand, word_list):
       word_list: list of lowercase strings
 
     """
+    total_score = 0
+    while calculate_handlen(hand) > 0:
+        print
+        print 'Current hand: {}'.format(get_displayable_hand(hand))
+        word = get_word(hand, word_list)
 
+        if word == '.':
+            break
+        else:
+            word_score = get_word_score(word, calculate_handlen(hand))
+            total_score += word_score
+            print '"{0}" scored {1:d} points. Total: {2:d} points'.format(
+                word, word_score, total_score)
+            hand = update_hand(hand, word)
+
+    print
+    print 'Total score: {0:d} points.'.format(total_score)
 
 
 #
@@ -268,7 +312,33 @@ def play_game(word_list):
 
     * If the user inputs anything else, ask them again.
     """
-    # TO DO...
+    hand = {}
+
+    while True:
+        user_action = ''
+        print
+        print
+        print 'Main Menu:'
+        print '----------'
+        print 'n - deals a new, random hand'
+
+        if calculate_handlen(hand) > 0:
+            print 'r - replays the previous hand'
+
+        print 'e - exits'
+        print
+        user_action = raw_input("Your choice: ")
+
+        if user_action == 'e':
+            print "Goodbye!"
+            break
+
+        if user_action == 'n':
+            hand = deal_hand(HAND_SIZE)
+
+        if user_action == 'r' or user_action == 'n':
+            play_hand(hand, word_list)
+
 
 #
 # Build data structures used for entire session and play game
