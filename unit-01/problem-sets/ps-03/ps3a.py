@@ -111,6 +111,15 @@ def display_hand(hand):
              print letter,              # print all on the same line
     print                               # print an empty line
 
+
+def get_displayable_hand(hand):
+    output = ''
+    for letter in hand.keys():
+        for j in range(hand[letter]):
+            output += letter + ' '
+
+    return output[:-1]
+
 #
 # Make sure you understand how this function works and what it does!
 #
@@ -187,7 +196,18 @@ def is_valid_word(word, hand, word_list):
     hand: dictionary (string -> int)
     word_list: list of lowercase strings
     """
-    # TO DO...
+    if not word in word_list:
+        return False
+
+    word_dict = get_frequency_dict(word)
+    hand_keys = hand.keys()
+    for key in word_dict.keys():
+        if key not in hand_keys or word_dict[key] > hand[key]:
+            return False
+
+    return True
+
+
 
 def calculate_handlen(hand):
     handlen = 0
@@ -226,7 +246,8 @@ def play_hand(hand, word_list):
       word_list: list of lowercase strings
 
     """
-    # TO DO ...
+
+
 
 #
 # Problem #5: Playing a game
