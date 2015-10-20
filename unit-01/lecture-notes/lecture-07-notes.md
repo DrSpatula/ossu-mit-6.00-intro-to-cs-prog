@@ -18,18 +18,19 @@ Because **0.125 = 1/8** and **1/8 = 2^-3^**, 0.125 in binary is 0.001
 * Python uses approximations for binary fractions
 	* Inaccurate, but it usually doesn matter
 
-**_Don't ever test the ++equality++ of two floating point numbers.
-Use a function that tests if they are ++close enough++._**
+**_Don't ever test the equality of two floating point numbers.
+Use a function that tests if they are close enough._**
 
 
 ## Debugging
-### _The aim of debugging is not to eliminate ++one particular++ bug, but to ++move towards++ a bug free program_
+### The aim of debugging is not to eliminate _one particular_ bug, but to _move towards_ a bug free program
 
 **Debugging is a _search_ for the place where things went wrong**
 * Be systematic when searching
 * Use a technique equivalent to a binary search
 
 **Ask: _How could the program have produced the incorrect output?_**
+
 1. Study the available data
 	* Text of the program
 	* Results of tests
@@ -37,8 +38,8 @@ Use a function that tests if they are ++close enough++._**
 3. Design and run a ++repeatable++ experiment
 	* Experiment should have the potential to disprove the hypothesis
 
-**Testing tips: **
+**Testing tips:**
 * Test with the smallest piece of input that produces the same bug
 * Use a test harness: a piece of code that automates the test
 
-### _You never find ++the++ bug, only ++a++ bug._
+### You never find _the_ bug, only _a_ bug.
