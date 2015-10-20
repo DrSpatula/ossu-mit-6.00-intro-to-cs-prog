@@ -9,17 +9,17 @@
 * Whole numbers are trivial to represent in binary, fractions not so much
 
 ### Fractional Numbers in Binary
-**In decimal form: ** 0.125 = 1 \* 10^-1^ + 2 \* 10^-2^ + 5 \* 10^-3^
+**In decimal form: ** 0.125 = 1 \* 10<sup>-1</sup> + 2 \* 10<sup>-2</sup> + 5 \* 10<sup>-3</sup>
 
-Because **0.125 = 1/8** and **1/8 = 2^-3^**, 0.125 in binary is 0.001
+Because **0.125 = 1/8** and **1/8 = 2<sup>-3</sup>**, 0.125 in binary is 0.001
 * "lucky" case, most fractional numbers have no exact binary representation
 * there is no binary definition of the decimal number 0.1
 	* infinite sequence
 * Python uses approximations for binary fractions
 	* Inaccurate, but it usually doesn matter
 
-**_Don't ever test the equality of two floating point numbers.
-Use a function that tests if they are close enough._**
+**Don't ever test the _equality_ of two floating point numbers.
+Use a function that tests if they are _close enough_.**
 
 
 ## Debugging
