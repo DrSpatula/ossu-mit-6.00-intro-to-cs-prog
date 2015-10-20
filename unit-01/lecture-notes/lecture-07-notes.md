@@ -35,7 +35,7 @@ Use a function that tests if they are _close enough_.**
 	* Text of the program
 	* Results of tests
 2. Form a hypothesis consistent with the data
-3. Design and run a ++repeatable++ experiment
+3. Design and run a _repeatable_ experiment
 	* Experiment should have the potential to disprove the hypothesis
 
 **Testing tips:**
