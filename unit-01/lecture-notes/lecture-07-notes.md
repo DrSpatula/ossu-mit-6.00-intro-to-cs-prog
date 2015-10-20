@@ -9,7 +9,7 @@
 * Whole numbers are trivial to represent in binary, fractions not so much
 
 ### Fractional Numbers in Binary
-**In decimal form: ** 0.125 = 1 \* 10<sup>-1</sup> + 2 \* 10<sup>-2</sup> + 5 \* 10<sup>-3</sup>
+**In decimal form:** 0.125 = 1 \* 10<sup>-1</sup> + 2 \* 10<sup>-2</sup> + 5 \* 10<sup>-3</sup>
 
 Because **0.125 = 1/8** and **1/8 = 2<sup>-3</sup>**, 0.125 in binary is 0.001
 * "lucky" case, most fractional numbers have no exact binary representation
