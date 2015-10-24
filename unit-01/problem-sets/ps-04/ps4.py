@@ -13,7 +13,7 @@ WORDLIST_FILENAME = "words.txt"
 def load_words():
     """
     Returns a list of valid words. Words are strings of lowercase letters.
-    
+
     Depending on the size of the word list, this function may
     take a while to finish.
     """
@@ -28,6 +28,7 @@ def load_words():
     return wordlist
 
 wordlist = load_words()
+
 
 def is_word(wordlist, word):
     """
@@ -47,14 +48,16 @@ def is_word(wordlist, word):
     word = word.strip(" !@#$%^&*()-_+={}[]|\:;'<>?,./\"")
     return word in wordlist
 
+
 def random_word(wordlist):
     """
     Returns a random word.
 
-    wordlist: list of words  
+    wordlist: list of words
     returns: a word from wordlist at random
     """
     return random.choice(wordlist)
+
 
 def random_string(wordlist, n):
     """
@@ -64,6 +67,7 @@ def random_string(wordlist, n):
     returns: a string of random words separated by spaces.
     """
     return " ".join([random_word(wordlist) for _ in range(n)])
+
 
 def random_scrambled(wordlist, n):
     """
@@ -82,6 +86,7 @@ def random_scrambled(wordlist, n):
     s = random_string(wordlist, n) + " "
     shifts = [(i, random.randint(0, 26)) for i in range(len(s)) if s[i-1] == ' ']
     return apply_shifts(s, shifts)[:-1]
+
 
 def get_fable_string():
     """
@@ -120,7 +125,26 @@ def build_coder(shift):
     'v': 'y', 'y': 'a', 'x': ' ', 'z': 'b'}
     (The order of the key-value pairs may be different.)
     """
-    ### TODO.
+    plain_letters = string.lowercase + ' '
+    cipher_letters = plain_letters[abs(shift):] + plain_letters[:abs(shift)]
+
+    coder = {}
+
+    if shift >= 0:
+        key_letters = plain_letters
+        val_letters = cipher_letters
+    else:
+        key_letters = cipher_letters
+        val_letters = plain_letters
+
+    for i in range(len(key_letters)):
+        coder[key_letters[i]] = val_letters[i]
+
+        if key_letters[i] != ' ':
+            coder[string.upper(key_letters[i])] = string.upper(val_letters[i])
+
+    return coder
+
 
 def build_encoder(shift):
     """
@@ -128,7 +152,7 @@ def build_encoder(shift):
     could encrypt the plain text by calling the following commands
     >>>encoder = build_encoder(shift)
     >>>encrypted_text = apply_coder(plain_text, encoder)
-    
+
     The cipher is defined by the shift value. Ignores non-letter characters
     like punctuation and numbers.
 
@@ -149,16 +173,17 @@ def build_encoder(shift):
 
     HINT : Use build_coder.
     """
-    ### TODO.
+    return build_coder(shift)
+
 
 def build_decoder(shift):
     """
-    Returns a dict that can be used to decode an encrypted text. For example, you
-    could decrypt an encrypted text by calling the following commands
+    Returns a dict that can be used to decode an encrypted text. For example,
+    you could decrypt an encrypted text by calling the following commands
     >>>encoder = build_encoder(shift)
     >>>encrypted_text = apply_coder(plain_text, encoder)
     >>>decrypted_text = apply_coder(plain_text, decoder)
-    
+
     The cipher is defined by the shift value. Ignores non-letter characters
     like punctuation and numbers.
 
@@ -176,11 +201,9 @@ def build_decoder(shift):
     'q': 'n', 'p': 'm', 's': 'p', 'r': 'o', 'u': 'r', 't': 'q', 'w': 't',
     'v': 's', 'y': 'v', 'x': 'u', 'z': 'w'}
     (The order of the key-value pairs may be different.)
-
-    HINT : Use build_coder.
     """
-    ### TODO.
- 
+    return build_coder(shift * -1)
+
 
 def apply_coder(text, coder):
     """
@@ -196,8 +219,12 @@ def apply_coder(text, coder):
     >>> apply_coder("Khoor,czruog!", build_decoder(3))
     'Hello, world!'
     """
-    ### TODO.
-  
+    out = ""
+    for char in text:
+        out += coder.get(char, char)
+
+    return out
+
 
 def apply_shift(text, shift):
     """
@@ -207,7 +234,7 @@ def apply_shift(text, shift):
     Otherwise, lower case letters should remain lower case, upper case
     letters should remain upper case, and all other punctuation should
     stay as it is.
-    
+
     text: string to apply the shift to
     shift: amount to shift the text
     returns: text after being shifted by specified amount.
@@ -216,8 +243,9 @@ def apply_shift(text, shift):
     >>> apply_shift('This is a test.', 8)
     'Apq hq hiham a.'
     """
-    ### TODO.
-   
+    return apply_coder(text, build_coder(shift))
+
+
 #
 # Problem 2: Codebreaking.
 #
@@ -237,8 +265,21 @@ def find_best_shift(wordlist, text):
     >>> apply_coder(s, build_decoder(8)) returns
     'Hello, world!'
     """
-    ### TODO
-   
+    for i in range(27):
+        deciphered_text = apply_coder(text, build_decoder(i))
+        words_list = string.split(deciphered_text, ' ')
+
+        valid_word_count = 0
+        for word in words_list:
+            if is_word(wordlist, word):
+                valid_word_count += 1
+            else:
+                break
+
+        if valid_word_count == len(words_list):
+            return i
+
+
 #
 # Problem 3: Multi-level encryption.
 #
@@ -246,11 +287,11 @@ def apply_shifts(text, shifts):
     """
     Applies a sequence of shifts to an input text.
 
-    text: A string to apply the Ceasar shifts to 
+    text: A string to apply the Ceasar shifts to
     shifts: A list of tuples containing the location each shift should
     begin and the shift offset. Each tuple is of the form (location,
     shift) The shifts are layered: each one is applied from its
-    starting position all the way through the end of the string.  
+    starting position all the way through the end of the string.
     returns: text after applying the shifts to the appropriate
     positions
 
@@ -258,8 +299,12 @@ def apply_shifts(text, shifts):
     >>> apply_shifts("Do Androids Dream of Electric Sheep?", [(0,6), (3, 18), (12, 16)])
     'JufYkaolfapxQdrnzmasmRyrpfdvpmEurrb?'
     """
-    ### TODO.
- 
+    for shift in shifts:
+        text = text[:shift[0]] + apply_shift(text[shift[0]:], shift[1])
+
+    return text
+
+
 #
 # Problem 4: Multi-level decryption.
 #
@@ -276,7 +321,7 @@ def find_best_shifts(wordlist, text):
     wordlist: list of words
     text: scambled text to try to find the words for
     returns: list of tuples.  each tuple is (position in text, amount of shift)
-    
+
     Examples:
     >>> s = random_scrambled(wordlist, 3)
     >>> s
@@ -325,7 +370,7 @@ def decrypt_fable():
 
 
 
-    
+
 #What is the moral of the story?
 #
 #
