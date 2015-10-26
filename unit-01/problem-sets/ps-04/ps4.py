@@ -338,6 +338,13 @@ def find_best_shifts(wordlist, text):
     >>> print apply_shifts(s, shifts)
     Do Androids Dream of Electric Sheep?
     """
+    shifts = find_best_shifts_rec(wordlist, text, 0)
+
+    # If a solution was found remove unnecessary 0 shifts
+    if isinstance(shifts, list):
+        shifts = filter(lambda item: item[1] != 0, shifts)
+
+    return shifts
 
 
 def find_best_shifts_rec(wordlist, text, start):
@@ -354,43 +361,32 @@ def find_best_shifts_rec(wordlist, text, start):
     start: where to start looking at shifts
     returns: list of tuples.  each tuple is (position in text, amount of shift)
     """
-    print "start: {0}, len(text): {1}".format(start, len(text))
-    if start > len(text):
-        return []
-
     for i in range(27):
-        #print "Trying shift of {}".format(i)
         deciphered_text = text[:start] + apply_coder(
             text[start:], build_decoder(i))
-        words_list = string.split(deciphered_text, ' ')
+        space_idx = string.find(deciphered_text, ' ', start)
 
-        n = -1
-        while n < len(words_list) and is_word(wordlist, words_list[n + 1]):
-            #print "word: {}".format(words_list[n + 1])
-            n += 1
+        if space_idx == -1:
+            possible_word = deciphered_text[start:]
 
-        if n < 0:
-            continue
+            # If there is no space and the rest of the string is a word,
+            # we are at the base case and only need to return this shift
+            if is_word(wordlist, possible_word):
+                return [(start, i * -1)]
         else:
-            next_start = 0
-            for x in range(n + 1):
-                next_start += len(words_list[x]) + 1
-            #print "Decrypted text: |{}|".format(deciphered_text[:next_start])
+            possible_word = deciphered_text[start:space_idx]
 
-            if next_start == start:
-                #print "No further words decoded, trying next shift"
-                continue
-            else:
-                print "Found shift ({0},{1})".format(start, i)
-                return [(start, i)] + find_best_shifts_rec(
-                    wordlist, deciphered_text, next_start)
+            if is_word(wordlist, possible_word):
+                rest = find_best_shifts_rec(
+                    wordlist, deciphered_text, space_idx + 1)
 
-    print "No solution found, returning []"
-    return []
+                if isinstance(rest, list):
+                    return [(start, i * -1)] + rest
+
 
 
 def decrypt_fable():
-     """
+    """
     Using the methods you created in this problem set,
     decrypt the fable given by the function get_fable_string().
     Once you decrypt the message, be sure to include as a comment
@@ -399,7 +395,9 @@ def decrypt_fable():
 
     returns: string - fable in plain text
     """
-    ### TODO.
+    fable_cipher = get_fable_string()
+    shifts = find_best_shifts(wordlist, fable_cipher)
+    return apply_shifts(fable_cipher, shifts)
 
 
 
