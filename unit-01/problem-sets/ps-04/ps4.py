@@ -339,6 +339,7 @@ def find_best_shifts(wordlist, text):
     Do Androids Dream of Electric Sheep?
     """
 
+
 def find_best_shifts_rec(wordlist, text, start):
     """
     Given a scrambled string and a starting position from which
@@ -353,7 +354,39 @@ def find_best_shifts_rec(wordlist, text, start):
     start: where to start looking at shifts
     returns: list of tuples.  each tuple is (position in text, amount of shift)
     """
-    ### TODO.
+    print "start: {0}, len(text): {1}".format(start, len(text))
+    if start > len(text):
+        return []
+
+    for i in range(27):
+        #print "Trying shift of {}".format(i)
+        deciphered_text = text[:start] + apply_coder(
+            text[start:], build_decoder(i))
+        words_list = string.split(deciphered_text, ' ')
+
+        n = -1
+        while n < len(words_list) and is_word(wordlist, words_list[n + 1]):
+            #print "word: {}".format(words_list[n + 1])
+            n += 1
+
+        if n < 0:
+            continue
+        else:
+            next_start = 0
+            for x in range(n + 1):
+                next_start += len(words_list[x]) + 1
+            #print "Decrypted text: |{}|".format(deciphered_text[:next_start])
+
+            if next_start == start:
+                #print "No further words decoded, trying next shift"
+                continue
+            else:
+                print "Found shift ({0},{1})".format(start, i)
+                return [(start, i)] + find_best_shifts_rec(
+                    wordlist, deciphered_text, next_start)
+
+    print "No solution found, returning []"
+    return []
 
 
 def decrypt_fable():
