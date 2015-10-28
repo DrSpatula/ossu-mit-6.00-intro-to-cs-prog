@@ -45,7 +45,30 @@ def process(url):
 
 # Problem 1
 
-# TODO: NewsStory
+
+class NewsStory(object):
+    def __init__(self, guid, title, subject, summary, link):
+        self.guid = guid
+        self.title = title
+        self.subject = subject
+        self.summary = summary
+        self.link = link
+
+    def get_guid(self):
+        return self.guid
+
+    def get_title(self):
+        return self.title
+
+    def get_subject(self):
+        return self.subject
+
+    def get_summary(self):
+        return self.summary
+
+    def get_link(self):
+        return self.link
+
 
 #======================
 # Part 2
@@ -63,7 +86,24 @@ class Trigger(object):
 # Whole Word Triggers
 # Problems 2-5
 
-# TODO: WordTrigger
+
+class WordTrigger(Trigger):
+    def __init__(self, word):
+        self.word = string.lower(word)
+
+    def is_word_in(self, text):
+        words = self._split_text(text)
+        return self.word in words
+
+    def _split_text(self, text):
+        split_chars = string.punctuation + ' '
+
+        for idx in range(len(text)):
+            if text[idx] in split_chars:
+                return [string.lower(text[:idx])] + \
+                    self._split_text(text[idx + 1:])
+
+        return []
 
 # TODO: TitleTrigger
 # TODO: SubjectTrigger
@@ -96,7 +136,7 @@ def filter_stories(stories, triggerlist):
     a trigger in triggerlist fires.
     """
     # TODO: Problem 10
-    # This is a placeholder (we're just returning all the stories, with no filtering) 
+    # This is a placeholder (we're just returning all the stories, with no filtering)
     # Feel free to change this line!
     return stories
 
@@ -126,7 +166,7 @@ def readTriggerConfig(filename):
     # 'lines' has a list of lines you need to parse
     # Build a set of triggers from it and
     # return the appropriate ones
-    
+
 import thread
 
 def main_thread(p):
@@ -137,13 +177,13 @@ def main_thread(p):
     t3 = PhraseTrigger("Supreme Court")
     t4 = OrTrigger(t2, t3)
     triggerlist = [t1, t4]
-    
+
     # TODO: Problem 11
-    # After implementing readTriggerConfig, uncomment this line 
+    # After implementing readTriggerConfig, uncomment this line
     #triggerlist = readTriggerConfig("triggers.txt")
 
     guidShown = []
-    
+
     while True:
         print "Polling..."
 
@@ -154,13 +194,13 @@ def main_thread(p):
 
         # Only select stories we're interested in
         stories = filter_stories(stories, triggerlist)
-    
+
         # Don't print a story if we have already printed it before
         newstories = []
         for story in stories:
             if story.get_guid() not in guidShown:
                 newstories.append(story)
-        
+
         for story in newstories:
             guidShown.append(story.get_guid())
             p.newWindow(story)
