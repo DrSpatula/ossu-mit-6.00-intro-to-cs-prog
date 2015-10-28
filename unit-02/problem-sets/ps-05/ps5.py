@@ -110,15 +110,30 @@ class TitleTrigger(WordTrigger):
     def evaluate(self, story):
         return self.is_word_in(story.title)
 
+    def __str__(self):
+        return "TitleTrigger: '{}'".format(self.word)
+
+    __repr__ = __str__
+
 
 class SubjectTrigger(WordTrigger):
     def evaluate(self, story):
         return self.is_word_in(story.subject)
 
+    def __str__(self):
+        return "SubjectTrigger: '{}'".format(self.word)
+
+    __repr__ = __str__
+
 
 class SummaryTrigger(WordTrigger):
     def evaluate(self, story):
         return self.is_word_in(story.summary)
+
+    def __str__(self):
+        return "SummaryTrigger: '{}'".format(self.word)
+
+    __repr__ = __str__
 
 
 # Composite Triggers
@@ -131,6 +146,11 @@ class NotTrigger(Trigger):
     def evaluate(self, story):
         return not self.trigger.evaluate(story)
 
+    def __str__(self):
+        return "NotTrigger: NOT '{}'".format(self.trigger)
+
+    __repr__ = __str__
+
 
 class AndTrigger(Trigger):
     def __init__(self, trigger_a, trigger_b):
@@ -140,6 +160,12 @@ class AndTrigger(Trigger):
     def evaluate(self, story):
         return self.trigger_a.evaluate(story) and self.trigger_b.evaluate(story)
 
+    def __str__(self):
+        return "AndTrigger: '{}' AND '{}'".format(
+            self.trigger_a, self.trigger_b)
+
+    __repr__ = __str__
+
 
 class OrTrigger(Trigger):
     def __init__(self, trigger_a, trigger_b):
@@ -148,6 +174,12 @@ class OrTrigger(Trigger):
 
     def evaluate(self, story):
         return self.trigger_a.evaluate(story) or self.trigger_b.evaluate(story)
+
+    def __str__(self):
+        return "OrTrigger: '{}' OR '{}'".format(
+            self.trigger_a, self.trigger_b)
+
+    __repr__ = __str__
 
 
 # Phrase Trigger
@@ -161,6 +193,11 @@ class PhraseTrigger(Trigger):
         return self.phrase in story.title \
             or self.phrase in story.subject \
             or self.phrase in story.summary
+
+    def __str__(self):
+        return "PhraseTrigger: '{}'".format(self.phrase)
+
+    __repr__ = __str__
 
 
 #======================
@@ -205,10 +242,45 @@ def readTriggerConfig(filename):
             continue
         lines.append(line)
 
-    # TODO: Problem 11
-    # 'lines' has a list of lines you need to parse
-    # Build a set of triggers from it and
-    # return the appropriate ones
+    triggerlist = []
+    triggers = {}
+
+    for line in lines:
+        split = string.split(line, ' ')
+        if split[0] == "ADD":
+            for trigger in split[1:]:
+                triggerlist.append(triggers[trigger])
+
+        else:
+            if split[1] == "TITLE":
+                triggers[split[0]] = TitleTrigger(split[2])
+
+            elif split[1] == "SUBJECT":
+                triggers[split[0]] = SubjectTrigger(split[2])
+
+            elif split[1] == "SUMMARY":
+                triggers[split[0]] = SummaryTrigger(split[2])
+
+            elif split[1] == "NOT":
+                triggers[split[0]] = NotTrigger(triggers[split[2]])
+
+            elif split[1] == "AND":
+                triggers[split[0]] = AndTrigger(
+                    triggers[split[2]], triggers[split[3]])
+
+            elif split[1] == "OR":
+                triggers[split[0]] = OrTrigger(
+                    triggers[split[2]], triggers[split[3]])
+
+            elif split[1] == "PHRASE":
+                triggers[split[0]] = PhraseTrigger(
+                    string.join(split[2:]))
+
+    print triggers
+    print triggerlist
+
+    return triggerlist
+
 
 import thread
 
@@ -223,7 +295,7 @@ def main_thread(p):
 
     # TODO: Problem 11
     # After implementing readTriggerConfig, uncomment this line
-    #triggerlist = readTriggerConfig("triggers.txt")
+    triggerlist = readTriggerConfig("triggers.txt")
 
     guidShown = []
 
