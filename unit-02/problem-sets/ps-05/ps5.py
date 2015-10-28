@@ -105,23 +105,62 @@ class WordTrigger(Trigger):
 
         return []
 
-# TODO: TitleTrigger
-# TODO: SubjectTrigger
-# TODO: SummaryTrigger
+
+class TitleTrigger(WordTrigger):
+    def evaluate(self, story):
+        return self.is_word_in(story.title)
+
+
+class SubjectTrigger(WordTrigger):
+    def evaluate(self, story):
+        return self.is_word_in(story.subject)
+
+
+class SummaryTrigger(WordTrigger):
+    def evaluate(self, story):
+        return self.is_word_in(story.summary)
 
 
 # Composite Triggers
 # Problems 6-8
 
-# TODO: NotTrigger
-# TODO: AndTrigger
-# TODO: OrTrigger
+class NotTrigger(Trigger):
+    def __init__(self, trigger):
+        self.trigger = trigger
+
+    def evaluate(self, story):
+        return not self.trigger.evaluate(story)
+
+
+class AndTrigger(Trigger):
+    def __init__(self, trigger_a, trigger_b):
+        self.trigger_a = trigger_a
+        self.trigger_b = trigger_b
+
+    def evaluate(self, story):
+        return self.trigger_a.evaluate(story) and self.trigger_b.evaluate(story)
+
+
+class OrTrigger(Trigger):
+    def __init__(self, trigger_a, trigger_b):
+        self.trigger_a = trigger_a
+        self.trigger_b = trigger_b
+
+    def evaluate(self, story):
+        return self.trigger_a.evaluate(story) or self.trigger_b.evaluate(story)
 
 
 # Phrase Trigger
 # Question 9
 
-# TODO: PhraseTrigger
+class PhraseTrigger(Trigger):
+    def __init__(self, phrase):
+        self.phrase = phrase
+
+    def evaluate(self, story):
+        return self.phrase in story.title \
+            or self.phrase in story.subject \
+            or self.phrase in story.summary
 
 
 #======================
@@ -135,10 +174,14 @@ def filter_stories(stories, triggerlist):
     Returns only those stories for whom
     a trigger in triggerlist fires.
     """
-    # TODO: Problem 10
-    # This is a placeholder (we're just returning all the stories, with no filtering)
-    # Feel free to change this line!
-    return stories
+    filtered_stories = []
+    for story in stories:
+        for trigger in triggerlist:
+            if trigger.evaluate(story):
+                filtered_stories.append(story)
+                break
+
+    return filtered_stories
 
 #======================
 # Part 4
@@ -173,7 +216,7 @@ def main_thread(p):
     # A sample trigger list - you'll replace
     # this with something more configurable in Problem 11
     t1 = SubjectTrigger("Obama")
-    t2 = SummaryTrigger("MIT")
+    t2 = SummaryTrigger("republican")
     t3 = PhraseTrigger("Supreme Court")
     t4 = OrTrigger(t2, t3)
     triggerlist = [t1, t4]
