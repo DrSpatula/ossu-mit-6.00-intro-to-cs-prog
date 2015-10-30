@@ -265,15 +265,15 @@ def runSimulation(num_robots, speed, width, height, min_coverage, num_trials,
     results = []
     for t in range(num_trials):
 
-        anim = ps6_visualize.RobotVisualization(
-            num_robots, width, height)
+        #anim = ps6_visualize.RobotVisualization(
+        #    num_robots, width, height)
 
         room = RectangularRoom(width, height)
         robots = []
         for r in range(num_robots):
             robots.append(robot_type(room, speed))
 
-        anim.update(room, robots)
+        #anim.update(room, robots)
 
         steps = 0
         while room.getPercentCleaned() < min_coverage:
@@ -281,10 +281,10 @@ def runSimulation(num_robots, speed, width, height, min_coverage, num_trials,
                 bot.updatePositionAndClean()
 
             steps += 1
-            anim.update(room, robots)
+        #    anim.update(room, robots)
 
         results.append(steps)
-        anim.show()
+        #anim.show()
 
     return sum(results) / float(len(results))
 
@@ -358,7 +358,6 @@ class RandomWalkRobot(Robot):
         self.position = new_position
         self.room.cleanTileAtPosition(self.position)
 
-runSimulation(1, 1.0, 10, 10, 0.8, 1, RandomWalkRobot)
 
 # === Problem 6
 
@@ -369,4 +368,29 @@ def showPlot3():
     """
     Produces a plot comparing the two robot strategies.
     """
-    raise NotImplementedError
+    num_robots = range(1,11)
+    coverage = 0.80
+    room_w = 20
+    room_h = 20
+    speed = 1.0
+    trials = 25
+
+    standard_results = []
+    random_walk_results = []
+
+    for botnum in num_robots:
+        standard_results.append(runSimulation(
+            botnum, speed, room_w, room_h, \
+            coverage, trials, StandardRobot))
+        random_walk_results.append(runSimulation(
+            botnum, speed, room_w, room_h, \
+            coverage, trials, RandomWalkRobot))
+
+    pylab.plot(num_robots, standard_results)
+    pylab.plot(num_robots, random_walk_results)
+    pylab.show()
+
+showPlot3()
+
+
+
