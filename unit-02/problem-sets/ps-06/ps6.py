@@ -47,6 +47,10 @@ class Position(object):
         new_y = old_y + delta_y
         return Position(new_x, new_y)
 
+    def __str__(self):
+        return "Position: {}, {}".format(self.getX(), self.getY())
+
+
 # === Problems 1
 
 class RectangularRoom(object):
@@ -66,8 +70,15 @@ class RectangularRoom(object):
         width: an integer > 0
         height: an integer > 0
         """
-        raise NotImplementedError
-    
+        self.width = width
+        self.height = height
+        self.dirty_tiles = set([])
+        self.clean_tiles = set([])
+
+        for w in range(self.width):
+            for h in range(self.height):
+                self.dirty_tiles.add((w, h))
+
     def cleanTileAtPosition(self, pos):
         """
         Mark the tile under the position POS as cleaned.
@@ -76,7 +87,10 @@ class RectangularRoom(object):
 
         pos: a Position
         """
-        raise NotImplementedError
+        query_tile = (int(pos.getX()), int(pos.getY()))
+        if query_tile in self.dirty_tiles:
+            self.dirty_tiles.remove(query_tile)
+            self.clean_tiles.add(query_tile)
 
     def isTileCleaned(self, m, n):
         """
@@ -88,15 +102,15 @@ class RectangularRoom(object):
         n: an integer
         returns: True if (m, n) is cleaned, False otherwise
         """
-        raise NotImplementedError
-    
+        return (m, n) in self.clean_tiles
+
     def getNumTiles(self):
         """
         Return the total number of tiles in the room.
 
         returns: an integer
         """
-        raise NotImplementedError
+        return self.width * self.height
 
     def getNumCleanedTiles(self):
         """
@@ -104,7 +118,15 @@ class RectangularRoom(object):
 
         returns: an integer
         """
-        raise NotImplementedError
+        return len(self.clean_tiles)
+
+    def getPercentCleaned(self):
+        """
+        Returns the percent of tiles in the room that have been cleaned
+
+        returns: a float
+        """
+        return float(self.getNumCleanedTiles()) / float(self.getNumTiles())
 
     def getRandomPosition(self):
         """
@@ -112,7 +134,10 @@ class RectangularRoom(object):
 
         returns: a Position object.
         """
-        raise NotImplementedError
+        x = random.uniform(0, self.width)
+        y = random.uniform(0, self.height)
+
+        return Position(x, y)
 
     def isPositionInRoom(self, pos):
         """
@@ -121,7 +146,8 @@ class RectangularRoom(object):
         pos: a Position object.
         returns: True if pos is in the room, False otherwise.
         """
-        raise NotImplementedError
+        return (0 <= pos.getX() < self.width) and \
+            (0 <= pos.getY() < self.height)
 
 
 class Robot(object):
@@ -143,7 +169,11 @@ class Robot(object):
         room:  a RectangularRoom object.
         speed: a float (speed > 0)
         """
-        raise NotImplementedError
+        self.room = room
+        self.speed = speed
+        self.direction = random.uniform(0, 360)
+        self.position = room.getRandomPosition()
+        room.cleanTileAtPosition(self.position)
 
     def getRobotPosition(self):
         """
@@ -151,8 +181,8 @@ class Robot(object):
 
         returns: a Position object giving the robot's position.
         """
-        raise NotImplementedError
-    
+        return self.position
+
     def getRobotDirection(self):
         """
         Return the direction of the robot.
@@ -160,7 +190,7 @@ class Robot(object):
         returns: an integer d giving the direction of the robot as an angle in
         degrees, 0 <= d < 360.
         """
-        raise NotImplementedError
+        return self.direction
 
     def setRobotPosition(self, position):
         """
@@ -168,7 +198,7 @@ class Robot(object):
 
         position: a Position object.
         """
-        raise NotImplementedError
+        self.position = position
 
     def setRobotDirection(self, direction):
         """
@@ -176,7 +206,7 @@ class Robot(object):
 
         direction: integer representing an angle in degrees
         """
-        raise NotImplementedError
+        self.direction = direction % 360
 
     def updatePositionAndClean(self):
         """
@@ -203,7 +233,14 @@ class StandardRobot(Robot):
         Move the robot to a new position and mark the tile it is on as having
         been cleaned.
         """
-        raise NotImplementedError
+        new_position = self.position.getNewPosition(self.direction, self.speed)
+        while not self.room.isPositionInRoom(new_position):
+            self.direction = random.uniform(0, 360)
+            new_position = self.position.getNewPosition(
+                self.direction, self.speed)
+
+        self.position = new_position
+        self.room.cleanTileAtPosition(self.position)
 
 # === Problem 3
 
@@ -225,20 +262,50 @@ def runSimulation(num_robots, speed, width, height, min_coverage, num_trials,
     robot_type: class of robot to be instantiated (e.g. Robot or
                 RandomWalkRobot)
     """
-    raise NotImplementedError
+    results = []
+    for t in range(num_trials):
 
+        #anim = ps6_visualize.RobotVisualization(
+        #    num_robots, width, height)
+
+        room = RectangularRoom(width, height)
+        robots = []
+        for r in range(num_robots):
+            robots.append(robot_type(room, speed))
+
+        #anim.update(room, robots)
+
+        steps = 0
+        while room.getPercentCleaned() < min_coverage:
+            for bot in robots:
+                bot.updatePositionAndClean()
+
+            steps += 1
+        #    anim.update(room, robots)
+
+        results.append(steps)
+        #anim.show()
+
+    return sum(results) / float(len(results))
+
+'''
+print runSimulation(1, 0.5, 5, 5, 1.0, 100, StandardRobot)
+print runSimulation(1, 1.0, 10, 10, 0.75, 100, StandardRobot)
+print runSimulation(1, 1.0, 10, 10, 0.90, 100, StandardRobot)
+print runSimulation(1, 1.0, 20, 20, 1.0, 100, StandardRobot)
+'''
 
 # === Problem 4
 #
 # 1) How long does it take to clean 80% of a 20×20 room with each of 1-10 robots?
 #
-# 2) How long does it take two robots to clean 80% of rooms with dimensions 
+# 2) How long does it take two robots to clean 80% of rooms with dimensions
 #	 20×20, 25×16, 40×10, 50×8, 80×5, and 100×4?
 
 def showPlot1():
     """
     Produces a plot showing dependence of cleaning time on number of robots.
-    """ 
+    """
     raise NotImplementedError
 
 def showPlot2():
