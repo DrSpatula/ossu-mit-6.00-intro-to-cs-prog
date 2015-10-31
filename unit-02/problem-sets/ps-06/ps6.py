@@ -386,8 +386,14 @@ def showPlot3():
             botnum, speed, room_w, room_h, \
             coverage, trials, RandomWalkRobot))
 
-    pylab.plot(num_robots, standard_results)
-    pylab.plot(num_robots, random_walk_results)
+    pylab.plot(
+        num_robots, standard_results, 'b', label="Standard Robots")
+    pylab.plot(
+        num_robots, random_walk_results, 'g', label="Random Walking Robots")
+    pylab.title("Comparison of Standard and Random Walk Robots")
+    pylab.xlabel("Number of Robots Operating Concurrently")
+    pylab.ylabel("Mean Steps Taken to Clean a 20x20 Unit Room")
+    pylab.legend()
     pylab.show()
 
 showPlot3()
