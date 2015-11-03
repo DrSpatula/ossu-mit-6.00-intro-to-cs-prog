@@ -1,4 +1,4 @@
-# Sampling and Monte Carlo Simulation
+# Lecture 14: Sampling and Monte Carlo Simulation
 
 ## Probability
 * Can sometimes be easier to calculate the probability of something _not_ happening and subtract that value from 1
