@@ -20,7 +20,6 @@ class ResistantVirus(SimpleVirus):
     """
 
     def __init__(self, maxBirthProb, clearProb, resistances, mutProb):
-
         """
 
         Initialize a ResistantVirus instance, saves all parameters as attributes
@@ -44,7 +43,6 @@ class ResistantVirus(SimpleVirus):
         self.mutProb = mutProb
 
     def isResistantTo(self, drug):
-
         """
         Get the state of this virus particle's resistance to a drug. This method
         is called by getResistPop() in Patient to determine how many virus
@@ -57,7 +55,6 @@ class ResistantVirus(SimpleVirus):
         return self.resistances.get(drug, False)
 
     def reproduce(self, popDensity, activeDrugs):
-
         """
         Stochastically determines whether this virus particle reproduces at a
         time step. Called by the update() method in the Patient class.
@@ -143,9 +140,7 @@ class Patient(SimplePatient):
         self.maxPop = maxPop
         self.prescriptions = []
 
-
     def addPrescription(self, newDrug):
-
         """
         Administer a drug to this patient. After a prescription is added, the
         drug acts on the virus population for all subsequent time steps. If the
@@ -158,16 +153,13 @@ class Patient(SimplePatient):
         if newDrug not in self.prescriptions:
             self.prescriptions.append(newDrug)
 
-
     def getPrescriptions(self):
-
         """
         Returns the drugs that are being administered to this patient.
         returns: The list of drug names (strings) being administered to this
         patient.
         """
         return self.prescriptions
-
 
     def getResistPop(self, drugResist):
         """
@@ -180,12 +172,18 @@ class Patient(SimplePatient):
         returns: the population of viruses (an integer) with resistances to all
         drugs in the drugResist list.
         """
-        # TODO
+        resistant_viruses = []
+        for virus in self.viruses:
+            resistant = True
+            for drug in self.prescriptions:
+                resistant = resistant and virus.isResistantTo(drug)
 
+            if resistant:
+                resistant_viruses.append(virus)
 
+        return len(resistant_viruses)
 
     def update(self):
-
         """
         Update the state of the virus population in this patient for a single
         time step. update() should execute these actions in order:
@@ -202,16 +200,36 @@ class Patient(SimplePatient):
         returns: the total virus population at the end of the update (an
         integer)
         """
-        # TODO
+        remaining_viruses = []
+        for virus in self.viruses:
+            if not virus.doesClear():
+                remaining_viruses.append(virus)
 
+        self.viruses = remaining_viruses
+
+        population_density = len(self.viruses) / float(self.maxPop)
+
+        new_viruses = []
+        for virus in self.viruses:
+            try:
+                new_viruses.append(virus.reproduce(
+                    population_density, self.prescriptions))
+
+            except NoChildException:
+                continue
+
+        self.viruses += new_viruses
+
+        return len(self.viruses)
 
 
 #
 # PROBLEM 2
 #
+def addStepResult(results, patient):
+    results.append((len(patient.viruses), patient.getResistPop()))
 
 def simulationWithDrug():
-
     """
 
     Runs simulations and plots graphs for problem 4.
@@ -220,7 +238,53 @@ def simulationWithDrug():
     total virus population vs. time and guttagonol-resistant virus population
     vs. time are plotted
     """
-    # TODO
+    num_trials = 100
+
+    maxPop = 1000
+    maxBirthProb = 0.1
+    clearProb = 0.05
+    resistances = {"guttagonol": False}
+    mutProb = 0.005
+
+    result_sets = []
+
+    for t in range(num_trials):
+        viruses = []
+        for i in range(100):
+            viruses.append(ResistantVirus(
+                maxBirthProb, clearProb, resistances, mutProb))
+
+        patient = Patient(viruses, maxPop)
+
+        results = []
+        for s in range(150):
+            patient.update()
+            addStepResult(results, patient)
+
+        patient.addPrescription("guttagonol")
+
+        for s in range(150):
+            patient.update()
+            addStepResult(results, patient)
+
+        result_sets.append(results)
+
+    summed_results = []
+    for i in range(len(result_sets[0])):
+        summed_results.append((0, 0))
+
+    for rs in result_sets:
+        for r in range(len(rs)):
+            summed_results[r][0] += rs[r][0]
+            summed_results[r][1] += rs[r][1]
+
+    averaged_results = []
+    for sr in summed_results:
+        averaged_results.append(
+            (sr[0] / float(num_trials), sr[1] / float(num_trials)))
+
+
+
 
 
 
@@ -229,7 +293,6 @@ def simulationWithDrug():
 #
 
 def simulationDelayedTreatment():
-
     """
     Runs simulations and make histograms for problem 5.
     Runs multiple simulations to show the relationship between delayed treatment
@@ -245,8 +308,8 @@ def simulationDelayedTreatment():
 # PROBLEM 4
 #
 
-def simulationTwoDrugsDelayedTreatment():
 
+def simulationTwoDrugsDelayedTreatment():
     """
     Runs simulations and make histograms for problem 6.
     Runs multiple simulations to show the relationship between administration
@@ -260,13 +323,11 @@ def simulationTwoDrugsDelayedTreatment():
     # TODO
 
 
-
 #
 # PROBLEM 5
 #
 
 def simulationTwoDrugsVirusPopulations():
-
     """
 
     Run simulations and plot graphs examining the relationship between
@@ -276,7 +337,4 @@ def simulationTwoDrugsVirusPopulations():
     a simulations for which drugs are administered simultaneously.
 
     """
-    #TODO
-
-
-
+    # TODO
