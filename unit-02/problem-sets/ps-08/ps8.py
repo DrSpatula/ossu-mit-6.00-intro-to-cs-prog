@@ -228,14 +228,32 @@ class Patient(SimplePatient):
 #
 # PROBLEM 2
 #
-def addStepResult(results, patient, drugs):
-    results.append(
-        (len(patient.viruses), patient.getResistPop(drugs)))
+def averageResults(result_sets):
+    """
+    Computes mean result set for a given simulation's result data
+    result_sets: a list containing lists of results for each trial of the sim
+    returns: a list of the mean values of the result data
+    """
+    num_trials = len(result_sets)
+    num_steps = len(result_sets[0])
+
+    summed_results = []
+    for s in range(num_steps):
+        summed_results.append(0)
+
+    for rs in result_sets:
+        for r in range(len(rs)):
+            summed_results[r] += rs[r]
+
+    averaged_results = []
+    for sr in summed_results:
+        averaged_results.append(sr / float(num_trials))
+
+    return averaged_results
 
 
 def simulationWithDrug():
     """
-
     Runs simulations and plots graphs for problem 4.
     Instantiates a patient, runs a simulation for 150 timesteps, adds
     guttagonol, and runs the simulation for an additional 150 timesteps.
@@ -250,7 +268,8 @@ def simulationWithDrug():
     resistances = {"guttagonol": False}
     mutProb = 0.005
 
-    result_sets = []
+    total_result_sets = []
+    resistant_result_sets = []
 
     for t in range(num_trials):
         viruses = []
@@ -260,33 +279,20 @@ def simulationWithDrug():
 
         patient = Patient(viruses, maxPop)
 
-        results = []
-        for s in range(150):
+        total_results = []
+        resistant_results = []
+        for s in range(300):
             patient.update()
-            addStepResult(results, patient, ['guttagonol'])
+            total_results.append(len(patient.viruses))
+            resistant_results.append(patient.getResistPop(['guttagonol']))
+            if s == 150:
+                patient.addPrescription("guttagonol")
 
-        patient.addPrescription("guttagonol")
+        total_result_sets.append(total_results)
+        resistant_result_sets.append(resistant_results)
 
-        for s in range(150):
-            patient.update()
-            addStepResult(results, patient, ['guttagonol'])
-
-        result_sets.append(results)
-
-    summed_results = []
-    for i in range(len(result_sets[0])):
-        summed_results.append([0, 0])
-
-    for rs in result_sets:
-        for r in range(len(rs)):
-            summed_results[r][0] += rs[r][0]
-            summed_results[r][1] += rs[r][1]
-
-    avg_total_viruses = []
-    avg_resistant_viruses = []
-    for sr in summed_results:
-        avg_total_viruses.append(sr[0] / float(num_trials))
-        avg_resistant_viruses.append(sr[1] / float(num_trials))
+    avg_total_viruses = averageResults(total_result_sets)
+    avg_resistant_viruses = averageResults(resistant_result_sets)
 
     pylab.plot(
         range(1, 301),
@@ -304,7 +310,7 @@ def simulationWithDrug():
 
 
 
-simulationWithDrug()
+#simulationWithDrug()
 
 
 
@@ -321,8 +327,54 @@ def simulationDelayedTreatment():
     150, 75, 0 timesteps (followed by an additional 150 timesteps of
     simulation).
     """
+    num_patients = 1000
+    num_viruses = 100
+    delays = [300, 150, 75, 0]
 
-    # TODO
+    maxPop = 1000
+    maxBirthProb = 0.1
+    clearProb = 0.05
+    resistances = {"guttagonol": False}
+    mutProb = 0.005
+
+    viruses = []
+    for v in range(num_viruses):
+        viruses.append(ResistantVirus(
+            maxBirthProb, clearProb, resistances, mutProb))
+
+    results = {}
+    for delay in delays:
+        results[delay] = []
+
+        for p in range(num_patients):
+            patient = Patient(viruses[:], maxPop)
+
+            for ts in range(delay + 150):
+                if ts == delay:
+                    patient.addPrescription("guttagonol")
+                patient.update()
+
+            if p % 25 == 0:
+                print "Delay: {}, Patient: {}".format(delay, p)
+
+            results[delay].append(len(patient.viruses))
+
+    fig, axes = pylab.subplots(2, 2)
+    fig.suptitle(
+        "Effect of Delayed Guttagonol Administration on Patient Outcome")
+
+    flat_axes = axes.flatten()
+    for i, axis in enumerate(flat_axes):
+        axis.hist(results[delays[i]], bins=30)
+        axis.set_title(
+            "Administration delayed by {} timesteps".format(delays[i]),
+            fontsize=10)
+        axis.set_xlabel("Final Virus Population", fontsize=8)
+        axis.set_ylabel("Patients", fontsize=8)
+
+    pylab.show()
+
+#simulationDelayedTreatment()
 
 #
 # PROBLEM 4
@@ -339,9 +391,58 @@ def simulationTwoDrugsDelayedTreatment():
     150, 75, 0 timesteps between adding drugs (followed by an additional 150
     timesteps of simulation).
     """
+    num_patients = 1000
+    num_viruses = 100
+    delays = [300, 150, 75, 0]
 
-    # TODO
+    maxPop = 1000
+    maxBirthProb = 0.1
+    clearProb = 0.05
+    resistances = {"guttagonol": False, "grimpex": False}
+    mutProb = 0.005
 
+    viruses = []
+    for v in range(num_viruses):
+        viruses.append(ResistantVirus(
+            maxBirthProb, clearProb, resistances, mutProb))
+
+    results = {}
+    for delay in delays:
+        results[delay] = []
+
+        for p in range(num_patients):
+            patient = Patient(viruses[:], maxPop)
+
+            for ts in range(150 + delay + 150):
+                if ts == 150:
+                    patient.addPrescription("guttagonol")
+
+                if ts == (150 + delay):
+                    patient.addPrescription("grimpex")
+
+                patient.update()
+
+            if p % 25 == 0:
+                print "Delay: {}, Patient: {}".format(delay, p)
+
+            results[delay].append(len(patient.viruses))
+
+    fig, axes = pylab.subplots(2, 2)
+    fig.suptitle(
+        "Effects of Two Drug Treatment Plans")
+
+    flat_axes = axes.flatten()
+    for i, axis in enumerate(flat_axes):
+        axis.hist(results[delays[i]], bins=30)
+        axis.set_title(
+            "Grimpex administration delayed by {} timesteps".format(delays[i]),
+            fontsize=10)
+        axis.set_xlabel("Final Virus Population", fontsize=8)
+        axis.set_ylabel("Patients", fontsize=8)
+
+    pylab.show()
+
+simulationTwoDrugsDelayedTreatment()
 
 #
 # PROBLEM 5
