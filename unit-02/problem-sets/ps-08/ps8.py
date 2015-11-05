@@ -93,29 +93,28 @@ class ResistantVirus(SimpleVirus):
         maxBirthProb and clearProb values as this virus. Raises a
         NoChildException if this virus particle does not reproduce.
         """
+        probability_of_reproduction = self.maxBirthProb * (1 - popDensity)
+
         able_to_reproduce = True
         for drug in activeDrugs:
             if not self.isResistantTo(drug):
                 able_to_reproduce = False
                 break
 
-        if able_to_reproduce:
-            probability_of_reproduction = self.maxBirthProb * (1 - popDensity)
+        if able_to_reproduce and random.random() < probability_of_reproduction:
+            child_resistances = {}
+            for drug in self.resistances:
+                if random.random() > self.mutProb:
+                    child_resistances[drug] = self.isResistantTo(drug)
+                else:
+                    child_resistances[drug] = not self.isResistantTo(drug)
 
-            if random.random() < probability_of_reproduction:
-                child_resistances = {}
-                for drug in self.resistances:
-                    if random.random() > self.mutProb:
-                        child_resistances[drug] = self.isResistantTo(drug)
-                    else:
-                        child_resistances[drug] = not self.isResistantTo(drug)
+            return ResistantVirus(
+                self.maxBirthProb, self.clearProb,
+                child_resistances, self.mutProb)
 
-                return ResistantVirus(
-                    self.maxBirthProb, self.clearProb,
-                    child_resistances, self.mutProb)
-
-            else:
-                raise NoChildException()
+        else:
+            raise NoChildException()
 
 
 class Patient(SimplePatient):
@@ -172,10 +171,13 @@ class Patient(SimplePatient):
         returns: the population of viruses (an integer) with resistances to all
         drugs in the drugResist list.
         """
+        if len(drugResist) == 0:
+            return 0
+
         resistant_viruses = []
         for virus in self.viruses:
             resistant = True
-            for drug in self.prescriptions:
+            for drug in drugResist:
                 resistant = resistant and virus.isResistantTo(drug)
 
             if resistant:
@@ -226,8 +228,10 @@ class Patient(SimplePatient):
 #
 # PROBLEM 2
 #
-def addStepResult(results, patient):
-    results.append((len(patient.viruses), patient.getResistPop()))
+def addStepResult(results, patient, drugs):
+    results.append(
+        (len(patient.viruses), patient.getResistPop(drugs)))
+
 
 def simulationWithDrug():
     """
@@ -238,7 +242,7 @@ def simulationWithDrug():
     total virus population vs. time and guttagonol-resistant virus population
     vs. time are plotted
     """
-    num_trials = 100
+    num_trials = 300
 
     maxPop = 1000
     maxBirthProb = 0.1
@@ -259,32 +263,48 @@ def simulationWithDrug():
         results = []
         for s in range(150):
             patient.update()
-            addStepResult(results, patient)
+            addStepResult(results, patient, ['guttagonol'])
 
         patient.addPrescription("guttagonol")
 
         for s in range(150):
             patient.update()
-            addStepResult(results, patient)
+            addStepResult(results, patient, ['guttagonol'])
 
         result_sets.append(results)
 
     summed_results = []
     for i in range(len(result_sets[0])):
-        summed_results.append((0, 0))
+        summed_results.append([0, 0])
 
     for rs in result_sets:
         for r in range(len(rs)):
             summed_results[r][0] += rs[r][0]
             summed_results[r][1] += rs[r][1]
 
-    averaged_results = []
+    avg_total_viruses = []
+    avg_resistant_viruses = []
     for sr in summed_results:
-        averaged_results.append(
-            (sr[0] / float(num_trials), sr[1] / float(num_trials)))
+        avg_total_viruses.append(sr[0] / float(num_trials))
+        avg_resistant_viruses.append(sr[1] / float(num_trials))
+
+    pylab.plot(
+        range(1, 301),
+        avg_total_viruses,
+        label="Total")
+    pylab.plot(
+        range(1, 301),
+        avg_resistant_viruses,
+        label="Resistant")
+    pylab.title("Virus Population Over Time")
+    pylab.xlabel("Time Step")
+    pylab.ylabel("Virus Population")
+    pylab.legend()
+    pylab.show()
 
 
 
+simulationWithDrug()
 
 
 

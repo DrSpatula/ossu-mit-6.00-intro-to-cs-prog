@@ -182,6 +182,7 @@ def simulationWithoutDrug():
 
 
 #run the sim
+'''
 num_trials = 1000
 result_set = []
 for s in range(num_trials):
@@ -204,3 +205,4 @@ pylab.title("Virus Population Over Time")
 pylab.xlabel("Hours")
 pylab.ylabel("Virus Population")
 pylab.show()
+'''
