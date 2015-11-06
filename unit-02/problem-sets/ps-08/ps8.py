@@ -442,7 +442,7 @@ def simulationTwoDrugsDelayedTreatment():
 
     pylab.show()
 
-simulationTwoDrugsDelayedTreatment()
+#simulationTwoDrugsDelayedTreatment()
 
 #
 # PROBLEM 5
@@ -458,4 +458,82 @@ def simulationTwoDrugsVirusPopulations():
     a simulations for which drugs are administered simultaneously.
 
     """
-    # TODO
+    num_trials = 100
+    num_viruses = 100
+    num_steps = 600
+
+    maxPop = 1000
+    maxBirthProb = 0.1
+    clearProb = 0.05
+    resistances = {"guttagonol": False, "grimpex": False}
+    mutProb = 0.005
+
+    total_result_sets = []
+    guttagonol_resistant_result_sets = []
+    grimpex_resistant_result_sets = []
+    fully_resistant_result_sets = []
+
+    viruses = []
+    for i in range(num_viruses):
+        viruses.append(ResistantVirus(
+            maxBirthProb, clearProb, resistances, mutProb))
+
+    for t in range(num_trials):
+        patient = Patient(viruses[:], maxPop)
+
+        total_results = []
+        guttagonol_resistant_results = []
+        grimpex_resistant_results = []
+        fully_resistant_results = []
+        for s in range(600):
+            patient.update()
+            total_results.append(len(patient.viruses))
+            guttagonol_resistant_results.append(
+                patient.getResistPop(['guttagonol']))
+            grimpex_resistant_results.append(
+                patient.getResistPop(['grimpex']))
+            fully_resistant_results.append(
+                patient.getResistPop(['guttagonol', 'grimpex']))
+
+            if s == 150:
+                patient.addPrescription("guttagonol")
+
+            #if s == 450:
+                patient.addPrescription("grimpex")
+
+        total_result_sets.append(total_results)
+        guttagonol_resistant_result_sets.append(guttagonol_resistant_results)
+        grimpex_resistant_result_sets.append(grimpex_resistant_results)
+        fully_resistant_result_sets.append(fully_resistant_results)
+
+    avg_total_viruses = averageResults(total_result_sets)
+    avg_guttagonol_resistant_viruses = averageResults(
+        guttagonol_resistant_result_sets)
+    avg_grimpex_resistant_viruses = averageResults(
+        grimpex_resistant_result_sets)
+    avg_fully_resistant_viruses = averageResults(
+        fully_resistant_result_sets)
+
+    pylab.plot(
+        range(1, num_steps + 1),
+        avg_total_viruses,
+        label="Total")
+    pylab.plot(
+        range(1, num_steps + 1),
+        avg_guttagonol_resistant_viruses,
+        label="Guttagonol Resistant")
+    pylab.plot(
+        range(1, num_steps + 1),
+        avg_grimpex_resistant_viruses,
+        label="Grimpex Resistant")
+    pylab.plot(
+        range(1, num_steps + 1),
+        avg_fully_resistant_viruses,
+        label="Fully Resistant")
+    pylab.title("Virus Population Over Time")
+    pylab.xlabel("Time Step")
+    pylab.ylabel("Virus Population")
+    pylab.legend(bbox_to_anchor=(1, 1), loc="upper left")
+    pylab.show()
+
+simulationTwoDrugsVirusPopulations()
