@@ -6,7 +6,6 @@
 # Collaborators:
 # Time:
 #
-
 SUBJECT_FILENAME = "subjects.txt"
 SHORT_SUBJECT_FILENAME = "shortened_subjects.txt"
 VALUE, WORK = 0, 1
@@ -14,6 +13,8 @@ VALUE, WORK = 0, 1
 #
 # Problem 1: Building A Subject Dictionary
 #
+
+
 def loadSubjects(filename):
     """
     Returns a dictionary mapping subject name to (value, work), where the name
@@ -26,32 +27,33 @@ def loadSubjects(filename):
 
     # The following sample code reads lines from the specified file and prints
     # each one.
+    course_dict = {}
+
     inputFile = open(filename)
     for line in inputFile:
-        print line
+        name, value, work = line.split(",")
+        course_dict[name] = (int(value), int(work))
 
-    # TODO: Instead of printing each line, modify the above to parse the name,
-    # value, and work of each subject and create a dictionary mapping the name
-    # to the (value, work).
+    return course_dict
+
 
 def printSubjects(subjects):
     """
     Prints a string containing name, value, and work of each subject in
     the dictionary of subjects and total value and work of all subjects
     """
-    totalVal, totalWork = 0,0
+    totalVal, totalWork = 0, 0
     if len(subjects) == 0:
         return 'Empty SubjectList'
     res = 'Course\tValue\tWork\n======\t====\t=====\n'
-    subNames = subjects.keys()
-    subNames.sort()
+    subNames = sorted(subjects.keys())
     for s in subNames:
         val = subjects[s][VALUE]
         work = subjects[s][WORK]
         res = res + s + '\t' + str(val) + '\t' + str(work) + '\n'
         totalVal += val
         totalWork += work
-    res = res + '\nTotal Value:\t' + str(totalVal) +'\n'
+    res = res + '\nTotal Value:\t' + str(totalVal) + '\n'
     res = res + 'Total Work:\t' + str(totalWork) + '\n'
     print res
 
@@ -59,26 +61,114 @@ def printSubjects(subjects):
 # Problem 2: Subject Selection By Greedy Optimization
 #
 
+
 def cmpValue(subInfo1, subInfo2):
     """
     Returns True if value in (value, work) tuple subInfo1 is GREATER than
     value in (value, work) tuple in subInfo2
     """
-    # TODO...
+    return subInfo1[0] > subInfo2[0]
+
 
 def cmpWork(subInfo1, subInfo2):
     """
     Returns True if work in (value, work) tuple subInfo1 is LESS than than work
     in (value, work) tuple in subInfo2
     """
-    # TODO...
+    return subInfo1[1] < subInfo2[1]
+
 
 def cmpRatio(subInfo1, subInfo2):
     """
-    Returns True if value/work in (value, work) tuple subInfo1 is 
+    Returns True if value/work in (value, work) tuple subInfo1 is
     GREATER than value/work in (value, work) tuple in subInfo2
     """
-    # TODO...
+    ratio1 = subInfo1[0] / float(subInfo1[1])
+    ratio2 = subInfo2[0] / float(subInfo2[1])
+
+    return ratio1 > ratio2
+
+
+def totalWork(subjects):
+    """
+    Finds the total work required for a subject list
+
+    subjects: dictionary mapping subject name to (value, work)
+    returns: integer representing total work required
+    """
+    if len(subjects.keys()) == 0:
+        return 0
+
+    total_work = 0
+    for subj in subjects:
+        total_work += subjects[subj][1]
+
+    return total_work
+
+
+def sortSubjects(subjects_list, subjects_dict, comparator):
+    """
+    Sorts subjects using provided comparator function
+
+    subjects_list: list containing strings of subject names
+    subjects_dict: dictionary mapping subject names to (value, work) tuples
+    comparator: function used to compare two subjects
+    returns: sorted list of subject names
+    """
+    if len(subjects_list) <= 1:
+        return subjects_list
+
+    midpoint = len(subjects_list) / 2
+    list_a = sortSubjects(subjects_list[:midpoint], subjects_dict, comparator)
+    list_b = sortSubjects(subjects_list[midpoint:], subjects_dict, comparator)
+    return mergeSubjects(list_a, list_b, subjects_dict, comparator)
+
+
+def mergeSubjects(
+        subj_list_a,
+        subj_list_b,
+        subjects_dict,
+        comparator,
+        accumulator=None):
+    """
+    Merges two lists of subject names into a sorted list
+    based on a comparison function
+
+    subj_list_a: list containing strings of subject names
+    subj_list_b: list containing strings of subject names
+    subjects_dict: dictionary mapping subject names to (value, work) tuples
+    comparator: function used to compare two subjects
+    accumulator: sorted list combining items from the two input lists
+    returns: merged list of subject names, sorted according to comparator
+    """
+
+    if accumulator is None:
+        accumulator = []
+
+    if len(subj_list_a) == 0:
+        return accumulator + subj_list_b
+
+    if len(subj_list_b) == 0:
+        return accumulator + subj_list_a
+
+    if comparator(subjects_dict[subj_list_a[0]], subjects_dict[subj_list_b[0]]):
+        accumulator.append(subj_list_a[0])
+        return mergeSubjects(
+            subj_list_a[1:],
+            subj_list_b,
+            subjects_dict,
+            comparator,
+            accumulator)
+
+    else:
+        accumulator.append(subj_list_b[0])
+        return mergeSubjects(
+            subj_list_a,
+            subj_list_b[1:],
+            subjects_dict,
+            comparator,
+            accumulator)
+
 
 def greedyAdvisor(subjects, maxWork, comparator):
     """
@@ -92,11 +182,23 @@ def greedyAdvisor(subjects, maxWork, comparator):
     comparator: function taking two tuples and returning a bool
     returns: dictionary mapping subject name to (value, work)
     """
-    # TODO...
+    chosen = {}
+    sorted_subj = sortSubjects(subjects.keys(), subjects, comparator)
+
+    i = 0
+    while totalWork(chosen) < maxWork and i < len(sorted_subj):
+        if totalWork(chosen) + subjects[sorted_subj[i]][1] <= maxWork:
+            chosen[sorted_subj[i]] = subjects[sorted_subj[i]]
+
+        i += 1
+
+    return chosen
 
 #
 # Problem 3: Subject Selection By Brute Force
 #
+
+
 def bruteForceAdvisor(subjects, maxWork):
     """
     Returns a dictionary mapping subject name to (value, work), which
@@ -108,5 +210,3 @@ def bruteForceAdvisor(subjects, maxWork):
     returns: dictionary mapping subject name to (value, work)
     """
     # TODO...
-
-
