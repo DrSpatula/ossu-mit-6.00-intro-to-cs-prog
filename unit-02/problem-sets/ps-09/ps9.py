@@ -106,6 +106,23 @@ def totalWork(subjects):
     return total_work
 
 
+def totalValue(subjects):
+    """
+    Finds the total value of a subject list
+
+    subjects: dictionary mapping subject name to (value, work)
+    returns: integer representing total value
+    """
+    if len(subjects.keys()) == 0:
+        return 0
+
+    total_value = 0
+    for val in subjects:
+        total_value += subjects[val][0]
+
+    return total_value
+
+
 def sortSubjects(subjects_list, subjects_dict, comparator):
     """
     Sorts subjects using provided comparator function
@@ -199,6 +216,51 @@ def greedyAdvisor(subjects, maxWork, comparator):
 #
 
 
+def decimalToBinary(number, number_of_digits):
+    """
+    Converts the decimal number into a string of length number_of_digits
+    representing number in binary
+
+    number: int, the number to convert
+    number_of_digits: int, the length of the returned string
+    returns: string, representation of number in binary
+    """
+    binary_string = ''
+    while number > 0:
+        binary_string = str(number % 2) + binary_string
+        number = number // 2
+
+    while len(binary_string) < number_of_digits:
+        binary_string = '0' + binary_string
+
+    return binary_string
+
+
+def generatePowerSet(subjects):
+    """
+    Generates a list of dicts containing all possible combinations of
+    items in subjects
+
+    subjects: dict mapping subject names to (value, work) tuples
+    returns: list of dicts
+    """
+    subj_names = subjects.keys()
+    templates = []
+    for n in range(2**len(subj_names)):
+        templates.append(decimalToBinary(n, len(subj_names)))
+
+    power_set = []
+    for t in templates:
+        combination = {}
+        for i in range(len(t)):
+            if t[i] == '1':
+                combination[subj_names[i]] = subjects[subj_names[i]]
+
+        power_set.append(combination)
+
+    return power_set
+
+
 def bruteForceAdvisor(subjects, maxWork):
     """
     Returns a dictionary mapping subject name to (value, work), which
@@ -209,4 +271,12 @@ def bruteForceAdvisor(subjects, maxWork):
     maxWork: int >= 0
     returns: dictionary mapping subject name to (value, work)
     """
-    # TODO...
+    combinations = generatePowerSet(subjects)
+
+    best_combo = {}
+    for combo in combinations:
+        if totalValue(combo) > totalValue(best_combo) and \
+                totalWork(combo) <= maxWork:
+            best_combo = combo
+
+    return best_combo
