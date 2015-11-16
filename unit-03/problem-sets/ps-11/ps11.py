@@ -6,8 +6,7 @@
 # Finding shortest paths through MIT buildings
 #
 
-import string
-from graph import Digraph, Edge, Node
+from graph import *
 
 #
 # Problem 2: Building up the Campus Map
@@ -37,6 +36,19 @@ def load_map(mapFilename):
     """
     # TODO
     print "Loading map from file..."
+
+    mit_map = MitDigraph()
+    map_file = open(mapFilename, 'r')
+    line_count = 0
+
+    for line in map_file:
+        edge_values = line.split()
+        new_edge = MitEdge(*edge_values)
+        mit_map.addEdge(new_edge)
+        line_count += 1
+
+    print "Loaded {} edges from file.".format(line_count)
+    return mit_map
 
 #
 # Problem 3: Finding the Shortest Path using Brute Force Search
