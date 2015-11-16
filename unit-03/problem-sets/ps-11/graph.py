@@ -114,3 +114,10 @@ class MitDigraph(Digraph):
             self.addNode(destination)
 
         self.edges[source].append(edge)
+
+    def childrenOf(self, node):
+        children = []
+        for edge in self.edges[node]:
+            children.append(edge.dest)
+
+        return set(children)

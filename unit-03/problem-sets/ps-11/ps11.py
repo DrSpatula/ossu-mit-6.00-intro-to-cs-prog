@@ -50,12 +50,31 @@ def load_map(mapFilename):
     print "Loaded {} edges from file.".format(line_count)
     return mit_map
 
+
 #
 # Problem 3: Finding the Shortest Path using Brute Force Search
 #
 # State the optimization problem as a function to minimize
 # and the constraints
 #
+
+def findPaths(digraph, start, end, visited=None):
+    if visited is None:
+        visited = []
+
+    if start == end:
+        return [start]
+
+    paths = []
+    for node in digraph.childrenOf(start):
+        if node not in visited:
+            visited = visited + [node]
+            new_path = findPaths(digraph, start, end, visited)
+
+            if new_path is None:
+                continue
+            else:
+                paths.append(new_path)
 
 
 def bruteForceSearch(digraph, start, end, maxTotalDist, maxDistOutdoors):
