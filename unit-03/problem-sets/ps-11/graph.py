@@ -57,7 +57,7 @@ class Digraph(object):
             raise ValueError('Duplicate node')
         else:
             self.nodes.add(node)
-            self.edges[node] = []
+            self.edges[node] = {}
 
     def addEdge(self, edge):
         src = edge.getSource()
@@ -83,8 +83,8 @@ class Digraph(object):
 class MitEdge(Edge):
 
     def __init__(self, src, dest, length, outdoor):
-        self.length = length
-        self.outdoor = outdoor
+        self.length = int(length)
+        self.outdoor = int(outdoor)
         Edge.__init__(self, src, dest)
 
     def percentOutdoors(self):
@@ -113,11 +113,7 @@ class MitDigraph(Digraph):
         if destination not in self.nodes:
             self.addNode(destination)
 
-        self.edges[source].append(edge)
+        self.edges[source][destination] = edge
 
     def childrenOf(self, node):
-        children = []
-        for edge in self.edges[node]:
-            children.append(edge.dest)
-
-        return set(children)
+        return self.edges[node].keys()
