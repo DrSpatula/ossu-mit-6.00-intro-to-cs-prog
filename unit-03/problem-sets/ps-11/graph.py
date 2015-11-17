@@ -95,7 +95,7 @@ class MitEdge(Edge):
             self.src, self.dest, self.length, self.outdoor)
 
     def __repr__(self):
-        return self.__str__
+        return self.__str__()
 
 
 class MitDigraph(Digraph):

@@ -63,18 +63,21 @@ def findPaths(digraph, start, end, visited=None):
         visited = []
 
     if start == end:
-        return [start]
+        return [[start]]
 
     paths = []
     for node in digraph.childrenOf(start):
         if node not in visited:
             visited = visited + [node]
-            new_path = findPaths(digraph, start, end, visited)
+            new_paths = findPaths(digraph, node, end, visited)
+            if new_paths is not None:
+                for np in new_paths:
+                    paths.append([start] + np)
 
-            if new_path is None:
-                continue
-            else:
-                paths.append(new_path)
+    if paths == []:
+        return None
+    else:
+        return paths
 
 
 def bruteForceSearch(digraph, start, end, maxTotalDist, maxDistOutdoors):
