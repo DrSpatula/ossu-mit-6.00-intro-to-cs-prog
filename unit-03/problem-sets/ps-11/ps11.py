@@ -8,14 +8,13 @@
 
 from graph import *
 
+
 #
 # Problem 2: Building up the Campus Map
 #
 # Write a couple of sentences describing how you will model the
 # problem as a graph)
 #
-
-
 def load_map(mapFilename):
     """
     Parses the map file and constructs a directed graph
@@ -57,7 +56,6 @@ def load_map(mapFilename):
 # State the optimization problem as a function to minimize
 # and the constraints
 #
-
 def findPaths(digraph, start, end, visited=None):
     if visited is None:
         visited = []
@@ -65,44 +63,19 @@ def findPaths(digraph, start, end, visited=None):
     if start == end:
         return [[start]]
 
-    debug = False
-    watch_edges = ['32', '36', '26', '16', '56']
-
     paths = []
-    for node in digraph.childrenOf(start):
-
-        if (start in watch_edges):
-            idx = watch_edges.index(start)
-            if watch_edges[idx + 1] == node:
-                debug = True
-
-        if debug:
-            print "Examining {} -> {}".format(start, node)
-
+    children = digraph.childrenOf(start)
+    for node in children:
         if node not in visited:
-
-            if debug:
-                print "Not yet visited."
-
-            visited = visited + [node]
-            if node == '16':
-                print "Node 16 added to visited by parent {}".format(start)
-
-            if debug:
-                print "New call to findPaths {} -> {}".format(node, end)
-
-            new_paths = findPaths(digraph, node, end, visited)
-
-            if debug:
-                print "New paths: {}".format(new_paths)
+            # visited = visited + [node]
+            # the above line mutates the 'outer' version of visited,
+            # causing the list to be shared amongst all recursive calls
+            # made by that call of findPaths
+            new_paths = findPaths(digraph, node, end, visited + [node])
 
             if new_paths is not None:
                 for np in new_paths:
                     paths.append([start] + np)
-        else:
-            if debug:
-                print "Node visited, skipping"
-        debug = False
 
     if paths == []:
         return None
@@ -179,8 +152,6 @@ def bruteForceSearch(digraph, start, end, maxTotalDist, maxDistOutdoors):
 #
 # Problem 4: Finding the Shorest Path using Optimized Search Method
 #
-
-
 def directedDFS(digraph, start, end, maxTotalDist, maxDistOutdoors):
     """
     Finds the shortest path from start to end using directed depth-first.
@@ -211,8 +182,6 @@ def directedDFS(digraph, start, end, maxTotalDist, maxDistOutdoors):
 
 if __name__ == '__main__':
     digraph = load_map("mit_map.txt")
-    findPaths(digraph, '32', '56')
-"""
     LARGE_DIST = 1000000
 
 # Test case 1
@@ -321,4 +290,3 @@ if __name__ == '__main__':
     print "Expected: No such path! Should throw a value error."
     print "Did brute force search raise an error?", bruteRaisedErr
     print "Did DFS search raise an error?", dfsRaisedErr
-"""
