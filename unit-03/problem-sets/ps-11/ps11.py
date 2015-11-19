@@ -152,6 +152,64 @@ def bruteForceSearch(digraph, start, end, maxTotalDist, maxDistOutdoors):
 #
 # Problem 4: Finding the Shorest Path using Optimized Search Method
 #
+def withinConstraints(digraph, path, max_dist, max_out):
+    length = lengthOfPath(digraph, path)
+    outside = amountOutdoors(digraph, path)
+    return length <= max_dist and outside <= max_out
+
+
+def betterPath(digraph, path, best_length, best_outside):
+    length = lengthOfPath(digraph, path)
+    outside = amountOutdoors(digraph, path)
+    return (length <= best_length and outside < best_outside) or \
+        (length < best_length and outside <= best_outside)
+
+
+def pathTuple(digraph, path):
+    length = lengthOfPath(digraph, path)
+    outside = amountOutdoors(digraph, path)
+    return ((length, outside), path)
+
+
+def findBestPath(digraph,
+                 start,
+                 end,
+                 max_dist,
+                 max_outside,
+                 visited=[],
+                 partial_path=[]):
+
+    if start == end:
+        return [start]
+
+    best = None
+    for node in digraph.childrenOf(start):
+        if node not in visited:
+            new_partial = partial_path + [node]
+            print new_partial
+
+            if withinConstraints(digraph, new_partial, max_dist, max_outside):
+                new_path = findBestPath(digraph, node, end,
+                                        max_dist, max_outside,
+                                        visited + [node], new_partial[:])
+
+                if new_path is None:
+                    continue
+
+                new_path = [start] + new_path
+
+                if withinConstraints(digraph, new_path, max_dist, max_outside):
+                    if (best is not None and
+                        betterPath(digraph, new_path, best[0][0], best[0][1])) \
+                            or best is None:
+                        best = pathTuple(digraph, new_path)
+
+    if best is None:
+        return None
+    else:
+        return best[1]
+
+
 def directedDFS(digraph, start, end, maxTotalDist, maxDistOutdoors):
     """
     Finds the shortest path from start to end using directed depth-first.
@@ -177,8 +235,8 @@ def directedDFS(digraph, start, end, maxTotalDist, maxDistOutdoors):
         If there exists no path that satisfies maxTotalDist and
         maxDistOutdoors constraints, then raises a ValueError.
     """
-    # TODO
-    pass
+    return findBestPath(digraph, start, end, maxTotalDist, maxDistOutdoors)
+
 
 if __name__ == '__main__':
     digraph = load_map("mit_map.txt")
