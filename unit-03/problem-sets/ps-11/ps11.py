@@ -155,20 +155,17 @@ def bruteForceSearch(digraph, start, end, maxTotalDist, maxDistOutdoors):
 def withinConstraints(digraph, path, max_dist, max_out):
     length = lengthOfPath(digraph, path)
     outside = amountOutdoors(digraph, path)
+
     return length <= max_dist and outside <= max_out
 
 
-def betterPath(digraph, path, best_length, best_outside):
-    length = lengthOfPath(digraph, path)
+def betterPath(digraph, path, best_path, max_outside):
     outside = amountOutdoors(digraph, path)
-    return (length <= best_length and outside < best_outside) or \
-        (length < best_length and outside <= best_outside)
-
-
-def pathTuple(digraph, path):
     length = lengthOfPath(digraph, path)
-    outside = amountOutdoors(digraph, path)
-    return ((length, outside), path)
+    best_length = lengthOfPath(digraph, best_path)
+
+    better = length < best_length and outside <= max_outside
+    return better
 
 
 def findBestPath(digraph,
@@ -182,32 +179,46 @@ def findBestPath(digraph,
     if start == end:
         return [start]
 
+    if partial_path == []:
+        partial_path = [start]
+
+    if visited == []:
+        visited == [start]
+
     best = None
-    for node in digraph.childrenOf(start):
+    children = digraph.childrenOf(start)
+
+    for node in children:
         if node not in visited:
+
             new_partial = partial_path + [node]
-            print new_partial
 
             if withinConstraints(digraph, new_partial, max_dist, max_outside):
-                new_path = findBestPath(digraph, node, end,
-                                        max_dist, max_outside,
-                                        visited + [node], new_partial[:])
+                if (best is not None and
+                    betterPath(digraph, new_partial, best, max_outside)) \
+                        or best is None:
 
-                if new_path is None:
-                    continue
+                    new_path = findBestPath(digraph, node, end,
+                                            max_dist, max_outside,
+                                            visited + [node], new_partial[:])
 
-                new_path = [start] + new_path
+                    if new_path is None:
+                        continue
 
-                if withinConstraints(digraph, new_path, max_dist, max_outside):
-                    if (best is not None and
-                        betterPath(digraph, new_path, best[0][0], best[0][1])) \
-                            or best is None:
-                        best = pathTuple(digraph, new_path)
+                    new_path = [start] + new_path
+
+                    if withinConstraints(digraph, new_path,
+                                         max_dist, max_outside):
+                        if (best is not None and
+                            betterPath(
+                                digraph, new_path, best, max_outside)) \
+                                or best is None:
+                            best = new_path
 
     if best is None:
         return None
     else:
-        return best[1]
+        return best
 
 
 def directedDFS(digraph, start, end, maxTotalDist, maxDistOutdoors):
@@ -235,7 +246,12 @@ def directedDFS(digraph, start, end, maxTotalDist, maxDistOutdoors):
         If there exists no path that satisfies maxTotalDist and
         maxDistOutdoors constraints, then raises a ValueError.
     """
-    return findBestPath(digraph, start, end, maxTotalDist, maxDistOutdoors)
+    path = findBestPath(digraph, start, end, maxTotalDist, maxDistOutdoors)
+
+    if path is None:
+        raise ValueError("No path found")
+    else:
+        return path
 
 
 if __name__ == '__main__':
